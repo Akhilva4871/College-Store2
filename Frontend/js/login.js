@@ -13,16 +13,22 @@ document.getElementById('login-form').addEventListener('submit', function (e) {
         },
         body: JSON.stringify({ email, password })
     })
-    .then(response => response.json())
+    .then(response => response.json())  // Parse the response to JSON
     .then(data => {
         if (data.success) {
-            // If login is successful, store the admin status and redirect to the dashboard
-            sessionStorage.setItem("isAdmin", "true");  // Storing admin status in sessionStorage
-            window.location.href = "admin-dashboard.html";  // Redirect to admin dashboard
+            alert(data.message);  // Show the login success message in an alert
+            sessionStorage.setItem("isAdmin", "true");  // Store admin status in sessionStorage
+    
+            // Add a small delay before redirecting (to ensure alert finishes first)
+            setTimeout(() => {
+                window.location.href = "dashboard.html";  // Redirect to admin dashboard page
+            }, 1000);  // 1000ms = 1 second delay
         } else {
-            alert(data.message);  // If login fails, show error message
+            alert(data.message);  // If login fails, show an error message
         }
     })
+    
+    
     .catch(error => {
         console.error("Error during login:", error);
         alert("An error occurred. Please try again.");

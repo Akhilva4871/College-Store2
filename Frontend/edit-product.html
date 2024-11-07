@@ -7,60 +7,87 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 </head>
 <body>
-    <div class="container">
-        <h2>Edit Product</h2>
+    <header class="bg-info p-3">
+        <h3 class="text-white">Edit Product</h3>
+    </header>
 
-        <!-- Edit Product Form -->
-        <form id="editForm">
+    <section class="container mt-4">
+        <h2 class="text-center">Edit Product Details</h2>
+
+        <form id="editProductForm">
             <div class="mb-3">
-                <label for="productName" class="form-label">Product Name</label>
-                <input type="text" class="form-control" id="productName" required>
+                <label for="name" class="form-label">Product Name</label>
+                <input type="text" class="form-control" id="name" required>
             </div>
             <div class="mb-3">
-                <label for="productPrice" class="form-label">Price</label>
-                <input type="number" class="form-control" id="productPrice" required>
+                <label for="price" class="form-label">Price</label>
+                <input type="number" class="form-control" id="price" required>
             </div>
-            <button type="submit" class="btn btn-primary">Save</button>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="category" class="form-label">Category</label>
+                <input type="text" class="form-control" id="category" required>
+            </div>
+            <div class="mb-3">
+                <label for="stock" class="form-label">Stock</label>
+                <input type="number" class="form-control" id="stock" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
         </form>
-    </div>
+    </section>
 
     <script>
+        // Get productId from the URL
         const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('productId'); // Get the productId from the URL
+        const productId = urlParams.get('productId');
 
-        // Fetch the product details from MongoDB using the productId
-        async function fetchProductDetails() {
-            const response = await fetch(`/products/${productId}`);
-            const data = await response.json();
-            if (data) {
-                document.getElementById('productName').value = data.name;
-                document.getElementById('productPrice').value = data.price;
-            }
-        }
+        // Fetch product details from the backend
+        fetch(`http://localhost:5000/api/products/${productId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Populate the form with the product data
+                document.getElementById('name').value = data.name;
+                document.getElementById('price').value = data.price;
+                document.getElementById('description').value = data.description;
+                document.getElementById('category').value = data.category;
+                document.getElementById('stock').value = data.stock;
+            })
+            .catch(error => {
+                alert('Error fetching product: ' + error);
+            });
 
-        fetchProductDetails();
-
-        document.getElementById('editForm').addEventListener('submit', async function (event) {
+        // Submit form to update the product
+        document.getElementById('editProductForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
-            const name = document.getElementById('productName').value;
-            const price = document.getElementById('productPrice').value;
+            const updatedProductData = {
+                name: document.getElementById('name').value,
+                price: document.getElementById('price').value,
+                description: document.getElementById('description').value,
+                category: document.getElementById('category').value,
+                stock: document.getElementById('stock').value
+            };
 
-            const response = await fetch(`/products/${productId}`, {
+            // Send updated data to backend
+            fetch(`http://localhost:5000/api/products/${productId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
-                body: JSON.stringify({ name, price })
-            });
-
-            if (response.ok) {
+                body: JSON.stringify(updatedProductData)
+            })
+            .then(response => response.json())
+            .then(data => {
                 alert('Product updated successfully');
-                window.location.href = 'admin-dashboard.html'; // Redirect to dashboard
-            } else {
-                alert('Failed to update product');
-            }
+                window.location.href = 'dashboard.html';  // Redirect back to dashboard
+            })
+            .catch(error => {
+                alert('Error updating product: ' + error);
+            });
         });
     </script>
 </body>

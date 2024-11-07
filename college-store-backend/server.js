@@ -1,36 +1,73 @@
 const express = require('express');
 const mongoose = require('mongoose');
+require('dotenv').config();
 const bodyParser = require('body-parser');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 const cors = require('cors');
+const Product = require('./models/Product');
 
 // Initialize Express app
 const app = express();
+const port = process.env.PORT || 5000;
 app.use(cors());  // Enable CORS for all origins (you can configure this further)
 app.use(bodyParser.json());  // Middleware to parse JSON data
 
-// MongoDB Atlas connection string (replace with your MongoDB URI)
-mongoose.connect('mongodb+srv://akhilva:akhilva@cluster0.xbrqi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+// MongoDB connection
+mongoose.connect(process.env.DB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((error) => console.error('MongoDB connection error:', error));
 
-  .then(() => console.log('Connected to MongoDB Atlas'))
-  .catch(err => console.log(err));
+// POST route to add a new product
+app.post('/api/products', async (req, res) => {
+    const { name, price, description, category, stock } = req.body;
 
-// Product Model
-const Product = mongoose.model('Product', new mongoose.Schema({
-    name: String,
-    price: Number,
-    stock: Number,
-    description: String
-}));
+    try {
+        const newProduct = new Product({ name, price, description, category, stock });
+        await newProduct.save();
+        res.status(201).json(newProduct);
+    } catch (error) {
+        res.status(500).json({ msg: 'Error adding product', error });
+    }
+});
 
-// Admin Model (For login authentication)
-const Admin = mongoose.model('Admin', new mongoose.Schema({
-    email: String,
-    password: String
-}));
+// GET route to get product details
+app.get('/api/products/:id', async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ msg: 'Product not found' });
+        res.json(product);
+    } catch (error) {
+        res.status(500).json({ msg: 'Error fetching product', error });
+    }
+});
 
-// Login route for admin
+// PUT route to update a product
+app.put('/api/products/:id', async (req, res) => {
+    const { name, price, description, category, stock } = req.body;
+
+    try {
+        const updatedProduct = await Product.findByIdAndUpdate(
+            req.params.id, 
+            { name, price, description, category, stock }, 
+            { new: true }
+        );
+        if (!updatedProduct) return res.status(404).json({ msg: 'Product not found' });
+        res.json(updatedProduct);
+    } catch (error) {
+        res.status(500).json({ msg: 'Error updating product', error });
+    }
+});
+
+
+// Middleware to parse JSON request bodies
+app.use(express.json());
+
+// Import routes
+const productRoutes = require('./routes/products');  // Assuming you have this file
+
+// Use the routes
+app.use('/api', productRoutes);
+
+// Login route for admin (you can customize the login authentication as needed)
 app.post("/api/login", (req, res) => {
     const { email, password } = req.body;
     const adminEmail = "admin@gmail.com";
@@ -43,37 +80,7 @@ app.post("/api/login", (req, res) => {
     }
 });
 
-// Edit product route
-app.put('/products/:id', async (req, res) => {
-    const { id } = req.params;
-    const { name, price, stock, description } = req.body;
-
-    try {
-        // Find and update the product
-        const product = await Product.findByIdAndUpdate(id, { name, price, stock, description }, { new: true });
-
-        if (!product) {
-            return res.status(404).json({ msg: 'Product not found' });
-        }
-
-        res.json(product);
-    } catch (error) {
-        res.status(500).json({ msg: 'Server error', error });
-    }
-});
-
-// Get all products (optional)
-app.get('/products', async (req, res) => {
-    try {
-        const products = await Product.find();
-        res.json(products);
-    } catch (error) {
-        res.status(500).json({ msg: 'Server error', error });
-    }
-});
-
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Start the server (only one instance of this)
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });

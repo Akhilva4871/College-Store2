@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- Add axios CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <header class="bg-info p-3">
+        <h3 class="text-white">Add New Product</h3>
+    </header>
+
+    <section class="container mt-4">
+        <h2 class="text-center">Enter Product Details</h2>
+
+        <form id="productForm">
+            <div class="mb-3">
+                <label for="name" class="form-label">Product Name</label>
+                <input type="text" class="form-control" id="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="price" class="form-label">Price</label>
+                <input type="number" class="form-control" id="price" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="category" class="form-label">Category</label>
+                <input type="text" class="form-control" id="category" required>
+            </div>
+            <div class="mb-3">
+                <label for="stock" class="form-label">Stock</label>
+                <input type="number" class="form-control" id="stock" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </section>
+
+    <script>
+        // Submit form data to backend to create a new product
+        document.getElementById('productForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const productData = {
+                name: document.getElementById('name').value,
+                price: document.getElementById('price').value,
+                description: document.getElementById('description').value,
+                category: document.getElementById('category').value,
+                stock: document.getElementById('stock').value
+            };
+
+            // Use axios to send data to backend
+            axios.post('http://localhost:5000/api/products', productData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                alert('Product added successfully');
+                window.location.href = 'dashboard.html';  // Redirect back to dashboard
+            })
+            .catch(error => {
+                alert('Error adding product: ' + error.response ? error.response.data : error.message);
+            });
+        });
+    </script>
+</body>
+</html>
