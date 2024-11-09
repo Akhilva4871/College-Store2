@@ -1,6 +1,5 @@
-// routes/products.js
 const express = require('express');
-//const auth = require('./middleware/auth');
+// const auth = require('./middleware/auth'); // Uncomment if authentication middleware is used
 const router = express.Router();
 const Product = require('../models/Product');
 
@@ -15,63 +14,28 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Route to get all products
-router.get('/products', async (req, res) => {
-  try {
-      const { search } = req.query;
-      let products;
-
-      if (search) {
-          // Search by product name or description
-          products = await Product.find({
-              $or: [
-                  { name: { $regex: search, $options: 'i' } },  // Case-insensitive search for name
-                  { description: { $regex: search, $options: 'i' } }  // Case-insensitive search for description
-              ]
-          });
-      } else {
-          // No search query, fetch all products
-          products = await Product.find();
-      }
-
-      res.json({ products });
-  } catch (error) {
-      console.error("Error fetching products:", error);
-      res.status(500).json({ message: "Failed to load products." });
-  }
-})
-
-// Get all products
+// Get all products or search by name/description
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find();
-    res.json(products);
+    const { search, category } = req.query;
+    let filter = {};
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } }, // Case-insensitive search for name
+        { description: { $regex: search, $options: 'i' } } // Case-insensitive search for description
+      ];
+    }
+
+    if (category) {
+      filter.category = category; // Filter by category if specified
+    }
+
+    const products = await Product.find(filter);
+    res.json({ products });
   } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// GET route to fetch all products or search by query
-router.get('/products', async (req, res) => {
-  try {
-      const { search } = req.query;
-      let products;
-
-      if (search) {
-          products = await Product.find({
-              $or: [
-                  { name: { $regex: search, $options: 'i' } },
-                  { description: { $regex: search, $options: 'i' } }
-              ]
-          });
-      } else {
-          products = await Product.find();
-      }
-
-      res.json({ products });
-  } catch (error) {
-      console.error("Error fetching products:", error);
-      res.status(500).json({ message: "Failed to load products." });
+    console.error("Error fetching products:", error);
+    res.status(500).json({ message: "Failed to load products." });
   }
 });
 
@@ -97,18 +61,15 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// GET products by category
-router.get('/', async (req, res) => {
+router.get('/category/:category', async (req, res) => {
   try {
-      const { category } = req.query;
-      const products = await Product.find({ category: category }); // Filter products by category
-      res.json({ products });
-  } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: 'Error fetching products' });
+      const category = req.params.category;
+      const products = await Product.find({ category });
+      res.render('category', { products, category }); // Renders the products in 'category.hbs' view
+  } catch (error) {
+      res.status(500).send("Error retrieving products: " + error.message);
   }
 });
-
 
 // Delete a product by ID
 router.delete('/:id', async (req, res) => {

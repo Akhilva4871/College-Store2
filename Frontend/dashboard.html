@@ -39,6 +39,73 @@
         </div>
     </section>
 
+    <section id="items" class="bg-light p-4">
+        <div class="container">
+            <h2 class="text-center">Items</h2>
+            <div class="row pt-4">
+                <!-- Category buttons to filter products -->
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary w-100" onclick="fetchProductsByCategory('Note Books')">Note Books</button>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary w-100" onclick="fetchProductsByCategory('Records')">Records</button>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary w-100" onclick="fetchProductsByCategory('Calculators')">Calculators</button>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary w-100" onclick="fetchProductsByCategory('Pen & Pencil')">Pen & Pencil</button>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary w-100" onclick="fetchProductsByCategory('Others')">Others</button>
+                </div>
+            </div>
+
+            <!-- Dynamic product display section -->
+            <div id="product-list" class="row pt-4">
+                <!-- Products will be displayed here -->
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Fetch products by category
+        function fetchProductsByCategory(category) {
+    // Encode the category name to handle special characters
+    const encodedCategory = encodeURIComponent(category);
+    fetch(`http://localhost:5000/api/products?category=${encodedCategory}`)
+        .then(response => response.json())
+        .then(products => {
+            displayProducts(products);
+        })
+        .catch(error => console.error("Error fetching products by category:", error));
+}
+
+
+        // Display products dynamically in the 'product-list' div
+        function displayProducts(products) {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = ''; // Clear previous content
+
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.classList.add('col-md-4', 'pt-3');
+                productCard.innerHTML = `
+                    <div class="card h-100" style="width: 18rem;">
+                        <img src="https://github.com/Akhilva4871/Campus-Store-Website/blob/main/books.png?raw=true" class="card-img-top" alt="${product.name}">
+                        <div class="card-body">
+                            <h5 class="card-title">${product.name}</h5>
+                            <p class="card-text">${product.description}</p>
+                            <p class="card-text"><strong>Price:</strong> $${product.price}</p>
+                            <p class="card-text"><strong>Stock:</strong> ${product.stock}</p>
+                        </div>
+                    </div>
+                `;
+                productList.appendChild(productCard);
+            });
+        }
+    </script>
+
     <script>
         // Function to redirect to the Add Product page
         function addProduct() {

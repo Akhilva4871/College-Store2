@@ -8,8 +8,8 @@ const Product = require('./models/Product');
 // Initialize Express app
 const app = express();
 const port = process.env.PORT || 5000;
-app.use(cors());  // Enable CORS for all origins (you can configure this further)
-app.use(bodyParser.json());  // Middleware to parse JSON data
+app.use(cors());
+app.use(bodyParser.json());
 
 // MongoDB connection
 mongoose.connect(process.env.DB_URI)
@@ -29,7 +29,7 @@ app.post('/api/products', async (req, res) => {
     }
 });
 
-// GET route to get product details
+// GET route to get product details by ID
 app.get('/api/products/:id', async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
@@ -46,8 +46,8 @@ app.put('/api/products/:id', async (req, res) => {
 
     try {
         const updatedProduct = await Product.findByIdAndUpdate(
-            req.params.id, 
-            { name, price, description, category, stock }, 
+            req.params.id,
+            { name, price, description, category, stock },
             { new: true }
         );
         if (!updatedProduct) return res.status(404).json({ msg: 'Product not found' });
@@ -57,17 +57,33 @@ app.put('/api/products/:id', async (req, res) => {
     }
 });
 
+// GET route to retrieve products by category
+app.get('/api/products', async (req, res) => {
+    const { category } = req.query;
+
+    try {
+        let products;
+        if (category) {
+            products = await Product.find({ category });
+        } else {
+            products = await Product.find(); // Get all products if no category is specified
+        }
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ msg: 'Error fetching products', error });
+    }
+});
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
 
 // Import routes
-const productRoutes = require('./routes/products');  // Assuming you have this file
+const productRoutes = require('./routes/products');
 
 // Use the routes
 app.use('/api', productRoutes);
 
-// Login route for admin (you can customize the login authentication as needed)
+// Login route for admin
 app.post("/api/login", (req, res) => {
     const { email, password } = req.body;
     const adminEmail = "admin@gmail.com";
@@ -80,7 +96,7 @@ app.post("/api/login", (req, res) => {
     }
 });
 
-// Start the server (only one instance of this)
+// Start the server
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });

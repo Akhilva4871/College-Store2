@@ -1,0 +1,12 @@
+<!-- views/category.hbs -->
+<h1>Products in {{category}}</h1>
+<div class="product-list">
+    {{#each products}}
+        <div class="product-card">
+            <h2>{{this.name}}</h2>
+            <p>{{this.description}}</p>
+            <p>Price: ${{this.price}}</p>
+            <p>Stock: {{this.stock}}</p>
+        </div>
+    {{/each}}
+</div>

@@ -31,7 +31,13 @@
             </div>
             <div class="mb-3">
                 <label for="category" class="form-label">Category</label>
-                <input type="text" class="form-control" id="category" required>
+                <select class="form-control" id="category" required>
+                    <option value="Note Books">Note Books</option>
+                    <option value="Records">Records</option>
+                    <option value="Calculators">Calculators</option>
+                    <option value="Pen & Pencil">Pen & Pencil</option>
+                    <option value="Others">Others</option>
+                </select>
             </div>
             <div class="mb-3">
                 <label for="stock" class="form-label">Stock</label>
@@ -66,7 +72,8 @@
                 window.location.href = 'dashboard.html';  // Redirect back to dashboard
             })
             .catch(error => {
-                alert('Error adding product: ' + error.response ? error.response.data : error.message);
+                const errorMsg = error.response ? error.response.data.msg : error.message;
+                alert('Error adding product: ' + errorMsg);
             });
         });
     </script>
