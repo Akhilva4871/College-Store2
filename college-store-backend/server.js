@@ -41,21 +41,32 @@ app.get('/api/products/:id', async (req, res) => {
 });
 
 // PUT route to update a product
-app.put('/api/products/:id', async (req, res) => {
-    const { name, price, description, category, stock } = req.body;
+// PUT route to decrease stock by quantity
+app.put('/api/products/:id/decrease-stock', async (req, res) => {
+    const { id } = req.params;
+    const { quantity } = req.body;
 
     try {
-        const updatedProduct = await Product.findByIdAndUpdate(
-            req.params.id,
-            { name, price, description, category, stock },
-            { new: true }
-        );
-        if (!updatedProduct) return res.status(404).json({ msg: 'Product not found' });
-        res.json(updatedProduct);
+        // Find the product by ID
+        const product = await Product.findById(id);
+        if (!product) return res.status(404).json({ msg: 'Product not found' });
+
+        // Check if the stock is sufficient
+        if (product.stock < quantity) {
+            return res.status(400).json({ msg: 'Insufficient stock' });
+        }
+
+        // Decrease stock by the specified quantity
+        product.stock -= quantity;
+
+        // Save the updated product
+        const updatedProduct = await product.save();
+        res.json(updatedProduct);  // Send the updated product back to the frontend
     } catch (error) {
-        res.status(500).json({ msg: 'Error updating product', error });
+        res.status(500).json({ msg: 'Error updating stock', error });
     }
 });
+
 
 // GET route to retrieve products by category
 app.get('/api/products', async (req, res) => {

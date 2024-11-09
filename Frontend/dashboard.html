@@ -98,12 +98,40 @@
                             <p class="card-text">${product.description}</p>
                             <p class="card-text"><strong>Price:</strong> $${product.price}</p>
                             <p class="card-text"><strong>Stock:</strong> ${product.stock}</p>
+                            <button class="btn btn-danger" onclick="updateStock('${product._id}')">Sold</button>
                         </div>
                     </div>
                 `;
                 productList.appendChild(productCard);
             });
         }
+
+        function updateStock(productId) {
+            const soldQuantity = prompt("Enter the quantity to subtract from stock:");
+
+            if (soldQuantity && !isNaN(soldQuantity) && soldQuantity > 0) {
+                fetch(`http://localhost:5000/api/products/${productId}/decrease-stock`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ quantity: parseInt(soldQuantity) })
+                })
+                .then(response => response.json())
+                .then(updatedProduct => {
+                    alert(`Stock updated for ${updatedProduct.name}`);
+                    fetchProductsByCategory(); // Re-fetch products after update
+                })
+                .catch(error => {
+                    console.error("Error updating stock:", error);
+                    alert("Error updating stock.");
+                });
+            } else {
+                alert("Please enter a valid number.");
+            }
+        }
+
+
     </script>
 
     <script>
