@@ -41,6 +41,24 @@ app.get('/api/products/:id', async (req, res) => {
 });
 
 // PUT route to update a product
+
+// PUT route to update the entire product
+app.put('/api/products/:id', async (req, res) => {
+    const { name, price, description, category, stock } = req.body;
+
+    try {
+        const product = await Product.findByIdAndUpdate(
+            req.params.id,
+            { name, price, description, category, stock },
+            { new: true } // Option to return the updated product
+        );
+        if (!product) return res.status(404).json({ msg: 'Product not found' });
+        res.json(product);
+    } catch (error) {
+        res.status(500).json({ msg: 'Error updating product', error });
+    }
+});
+
 // PUT route to decrease stock by quantity
 app.put('/api/products/:id/decrease-stock', async (req, res) => {
     const { id } = req.params;
